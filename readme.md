@@ -1,3 +1,7 @@
+![usbhub](https://github.com/user-attachments/assets/6c8fec5e-133f-4aad-8cce-1b40f317e81a)
+![zimas](https://github.com/user-attachments/assets/16e6fd87-3905-4da1-a254-7bd6aab7e34b)
+![zima](https://github.com/user-attachments/assets/379b8ba4-7ed8-48c8-858d-12e91649ec97)
+![display](https://github.com/user-attachments/assets/8c7c96a8-d871-4175-a02d-5c46116eb944)
 ```
 
 [ Mirai ]      [ sasuke ]
