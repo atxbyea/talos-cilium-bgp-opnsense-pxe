@@ -22,22 +22,22 @@ machine:
       servers:
         - 192.168.1.1
 
+cluster:
     nodeLabels:
         node.kubernetes.io/exclude-from-external-load-balancers: "false"
 
-    cluster:
-      controlPlane:
-          endpoint: https://cluster.eirikzlab.com:6443
-      clusterName: clyster
+    controlPlane:
+        endpoint: https://cluster.eirikzlab.com:6443
+    clusterName: clyster
 
-      network:
-        dnsDomain: cluster.local
+    network:
+      dnsDomain: cluster.local
 
-        cni:
-            name: none
+      cni:
+          name: none
 
     apiServer:
         certSANs:
           - cluster.eirikzlab.com
 
-        allowSchedulingOnControlPlanes: true
+    allowSchedulingOnControlPlanes: true
