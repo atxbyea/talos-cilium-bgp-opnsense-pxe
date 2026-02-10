@@ -37,7 +37,7 @@ k exec -ti -n kube-system cilium-lb77z -- cilium service list
 k exec -ti -n kube-system cilium-29gx5 -- cilium bpf lb list
 
 k create deploy nginx --image nginx
-k expose pod nginx-5869d7778c-j5z84 --name="nginx-lb" --selector="run=nginx" --port=80 --target-port=80 --type=LoadBalancer
+k expose pod nginx-5869d7778c-j5z84 --name="nginx-lb" --selector="app=nginx" --port=80 --target-port=80 --type=LoadBalancer
 
 
 
