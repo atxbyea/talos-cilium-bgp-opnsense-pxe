@@ -1,0 +1,13 @@
+#!ipxe
+
+# Normalize MAC address
+set mac ${net0/mac:hexhyp}
+set mac ${mac:-}
+
+echo Checking for per-MAC script: MAC-${mac}.ipxe via HTTP
+
+chain --autofree MAC-${mac}.ipxe && exit
+
+echo No per-MAC script found, loading netboot.xyz menu
+chain --autofree netboot.xyz
+

@@ -1,0 +1,2 @@
+sed -i 's/.*chain.*/chain talos-wipe.ipxe/' MAC-00e04c5d8*
+sed -i 's/.*chain.*/chain talos-unattended.ipxe/' MAC-00e04c5d8*

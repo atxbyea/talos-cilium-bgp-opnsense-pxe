@@ -1,0 +1,2 @@
+#!ipxe
+set use_local_assets true

@@ -1,0 +1,69 @@
+# BGP Cluster Configuration
+# Defines the BGP settings for the Cilium cluster, including its local ASN and its peer (pfSense).
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPClusterConfig
+metadata:
+  name: cilium-bgp
+spec:
+  bgpInstances:
+  - name: "bgp-k8s-cilium"
+    localASN: 64500 # Cilium ASN
+    peers:
+    - name: "opnsense-peer"
+      peerASN: 64501 # pfSense ASN
+      peerAddress: 192.168.1.1  # pfSense RID
+      peerConfigRef:
+        name: "cilium-peer"
+
+---
+# BGP Peer Configuration
+# Sets BGP timers, graceful restart, and route advertisement settings.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPPeerConfig
+metadata:
+  name: cilium-peer
+spec:
+  timers:
+    holdTimeSeconds: 9
+    keepAliveTimeSeconds: 3
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 15
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:
+        matchLabels:
+          advertise: "bgp"
+
+---
+# BGP Advertisement
+# Defines which Kubernetes services should be advertised via BGP.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumBGPAdvertisement
+metadata:
+  name: bgp-advertisements
+  labels:
+    advertise: bgp
+spec:
+  advertisements:
+    - advertisementType: "Service"
+      service:
+        addresses:
+          - LoadBalancerIP
+      selector:
+        matchExpressions:
+          - { key: somekey, operator: NotIn, values: [ never-used-value ] }
+
+---
+# LoadBalancer IPAM
+# Configures the range of IPs assigned to Kubernetes LoadBalancer services.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "default-pool"
+spec:
+  blocks:
+  - start: "10.20.30.10" # LB Start IP
+    stop: "10.20.30.100"  # LB Stop IP
+

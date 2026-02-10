@@ -1,0 +1,41 @@
+ talosctl gen config clyster https://192.168.1.81:6443 --output-dir ./talosconfig
+ 
+ export TALOSCONFIG=~/talosgobrrr/talosconfig 
+ talosctl config endpoints 192.168.1.81
+ talosctl config node 192.168.1.81
+
+ talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.81 --file ./controlplane.yaml 
+ 
+ talosctl dashboard
+ 
+ talosctl bootstrap
+ 
+ talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.82 --file ./controlplane.yaml 
+ talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.83 --file ./controlplane.yaml 
+ 
+ talosctl etcd members
+ talosctl etcd status
+ 
+ talosctl dashboard
+
+
+
+cilium install --version 1.18.5 --set kubeProxyReplacement=true --set bgpControlPlane.enabled=true --set loadBalancer.algorithm=maglev --set ipam.mode=kubernetes --set=securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" --set=securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" --set=cgroup.autoMount.enabled=false --set=cgroup.hostRoot=/sys/fs/cgroup  --set=k8sServiceHost=localhost --set=k8sServicePort=7445
+
+
+cilium status --wait
+
+k apply -f cilium-pool.yaml 
+k apply -f cilium-peering.yaml 
+
+cilium bgp peers
+
+k exec -ti -n kube-system cilium-29gx5 -- cilium-dbg status
+k exec -ti -n kube-system cilium-lb77z -- cilium service list
+k exec -ti -n kube-system cilium-29gx5 -- cilium bpf lb list
+
+k create deploy nginx --image nginx
+k expose pod nginx-5869d7778c-j5z84 --name="nginx-lb" --selector="run=nginx" --port=80 --target-port=80 --type=LoadBalancer
+
+
+
