@@ -4,13 +4,13 @@
 
 ### Export the talosconfig to current shell and set the endpoint and first node###
  
- export TALOSCONFIG=~/talosgobrrr/talosconfig 
+ export TALOSCONFIG=$(pwd)/talosconfig/talosconfig
  talosctl config endpoints 192.168.1.81
  talosctl config node 192.168.1.81
 
 ### Lets apply the config to the first node ###
 
- talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.81 --file ./controlplane.yaml --patch @patch.yaml
+ talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.81 --file talosconfig/controlplane.yaml --config-patch @patch.yaml
 
 ### We keep an eye on the status until it is done ###
  
@@ -19,25 +19,27 @@
 ### Once done with the initial install and bringup, lets bootstrap the first node ###
 
  talosctl bootstrap
-
+ talosctl dashboard
+ 
 ### Then we apply the config to the two remaining nodes ###
 
- talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.82 --file ./controlplane.yaml 
- talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.83 --file ./controlplane.yaml 
+ talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.82 --file talosconfig/controlplane.yaml --config-patch @patch.yaml
+ talosctl apply-config --insecure -e 192.168.1.81 --nodes 192.168.1.83 --file talosconfig/controlplane.yaml --config-patch @patch.yaml
 
 ### Lets verify that etcd has all members and is healthy ###
  
  talosctl etcd members
  talosctl etcd status
 
-### Again lets check the status ###
+### Again lets check the status, it will still be READY: NO because of the missing CNI###
  
  talosctl dashboard
 
-### We then pull the kubeconfig ###
+### We then pull the kubeconfig  and verify connection ###
 
-talosctl kubeconfig
+talosctl kubeconfig -f 
 export KUBECONFIG=$(pwd)/kubeconfig
+k get nodes
 
 ### We deployed without any CNI, so lets go ahead and deploy cilium with bgp enabled ###
 
@@ -47,18 +49,20 @@ cilium install --version 1.18.5 --set kubeProxyReplacement=true --set bgpControl
 
 cilium status --wait
 
+cilium bpg peers
+
 ### Lets config the peering and pool data for the BGP upstream ###
 
-k apply -f cilium-pool.yaml 
-k apply -f cilium-peering.yaml 
+k apply -f cilium/cilium-pool.yaml 
+k apply -f cilium/cilium-peering.yaml 
 
 ### We can check the status of the peering towards the upstream ###
 
 cilium bgp peers
 
-k exec -ti -n kube-system cilium-29gx5 -- cilium-dbg status
-k exec -ti -n kube-system cilium-lb77z -- cilium service list
-k exec -ti -n kube-system cilium-29gx5 -- cilium bpf lb list
+k get pods --no-headers -o name -n kube-system | grep -E 'cilium-[0-9]' | xargs -I {} kubectl exec -n kube-system {} -- cilium-dbg status
+k get pods --no-headers -o name -n kube-system | grep -E 'cilium-[0-9]' | xargs -I {} kubectl exec -n kube-system {} -- cilium service list
+k get pods --no-headers -o name -n kube-system | grep -E 'cilium-[0-9]' | xargs -I {} kubectl exec -n kube-system {} -- cilium bpf lb list
 
 ### We'll go ahead and deploy our first test nginx instance ###
 
@@ -66,7 +70,8 @@ k create deploy nginx --image nginx
 
 ### Then expose it via the loadbalancer, and if all is well it will get advertised to the upstream ###
 
-k expose pod nginx-5869d7778c-j5z84 --name="nginx-lb" --selector="app=nginx" --port=80 --target-port=80 --type=LoadBalancer
+k expose deployment nginx --port 80 --target-port=80 --name=loadbalancer-lab --type=LoadBalancer
+
 
 
 
