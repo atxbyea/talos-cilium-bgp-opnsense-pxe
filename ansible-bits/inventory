@@ -1,0 +1,12 @@
+[firewalls]
+sasuke 
+
+[firewalls:vars]
+ansible_connection=local
+ansible_host=sasuke.eirikzlab.com
+
+opnsense_firewall=sasuke.eirikzlab.com
+opnsense_api_port=443
+
+opnsense_api_key=key
+opnsense_api_secret=secret
