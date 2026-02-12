@@ -1,0 +1,37 @@
+- name: Register Kubernetes services in OPNsense dnsmasq
+  hosts: firewalls
+  connection: local
+  gather_facts: false
+
+  module_defaults:
+    group/oxlorg.opnsense.all:
+      firewall: "{{ opnsense_firewall }}"
+      api_key: "{{ opnsense_api_key }}"
+      api_secret: "{{ opnsense_api_secret }}"
+      api_port: "{{ opnsense_api_port }}"
+
+  vars:
+    kube_namespace: default
+    dns_domain: eirikzlab.com 
+
+  tasks:
+    - name: Get Kubernetes Services
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Service
+        namespace: "{{ kube_namespace }}"
+      register: services
+
+    - name: Create dnsmasq entries for LoadBalancer services
+      oxlorg.opnsense.dnsmasq_host:
+        description: "K8s svc {{ item.metadata.name }}"
+        host: "{{ item.metadata.name }}"
+        domain: "{{ dns_domain }}"
+        ip: "{{ item.status.loadBalancer.ingress[0].ip }}"
+        state: present
+      loop: "{{ services.resources }}"
+      when:
+        - item.status.loadBalancer is defined
+        - item.status.loadBalancer.ingress is defined
+        - item.status.loadBalancer.ingress | length > 0
+
