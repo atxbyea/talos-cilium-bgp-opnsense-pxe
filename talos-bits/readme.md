@@ -61,7 +61,9 @@ k apply -f cilium/cilium-peering.yaml
 cilium bgp peers
 
 k get pods --no-headers -o name -n kube-system | grep -E 'cilium-[0-9]' | xargs -I {} kubectl exec -n kube-system {} -- cilium-dbg status
+
 k get pods --no-headers -o name -n kube-system | grep -E 'cilium-[0-9]' | xargs -I {} kubectl exec -n kube-system {} -- cilium service list
+
 k get pods --no-headers -o name -n kube-system | grep -E 'cilium-[0-9]' | xargs -I {} kubectl exec -n kube-system {} -- cilium bpf lb list
 
 ### We'll go ahead and deploy our first test nginx instance ###
